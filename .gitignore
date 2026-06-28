@@ -1,0 +1,6 @@
+### idea ###
+.idea
+
+### AI agent ###
+docs/
+*.md
