@@ -1,5 +1,7 @@
 package com.villo.global.config;
 
+import com.villo.domain.auth.oauth2.OAuth2SuccessHandler;
+import com.villo.domain.auth.oauth2.OAuth2UserService;
 import com.villo.global.jwt.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +25,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtFilter jwtFilter;
+    private final OAuth2UserService oAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Value("${app.frontend.base-url}")
     private String frontendBaseUrl;
@@ -53,11 +57,13 @@ public class SecurityConfig {
                 )
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
-                                .authorizationEndpoint(endpoint ->
-                                        endpoint.baseUri("/oauth2/authorization"))
-                                .redirectionEndpoint(endpoint ->
-                                        endpoint.baseUri("/login/oauth2/code/*"))
-                        // 로그인 성공/실패 핸들러는 구현 후 추가 예정
+                        .authorizationEndpoint(endpoint ->
+                                endpoint.baseUri("/oauth2/authorization"))
+                        .redirectionEndpoint(endpoint ->
+                                endpoint.baseUri("/login/oauth2/code/*"))
+                        .userInfoEndpoint(userInfo ->
+                                userInfo.userService(oAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler)
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

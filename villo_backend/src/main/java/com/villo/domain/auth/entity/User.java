@@ -23,7 +23,7 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 100)
     private String email;
 
-    @Column(nullable = false, length = 50, unique = true)
+    @Column(length = 50, unique = true)
     private String nickname;
 
     @Enumerated(EnumType.STRING)
