@@ -1,8 +1,6 @@
 package com.villo.domain.todo.controller;
 
-import com.villo.domain.todo.dto.TodoCreateRequest;
-import com.villo.domain.todo.dto.TodoResponse;
-import com.villo.domain.todo.dto.TodoUpdateRequest;
+import com.villo.domain.todo.dto.*;
 import com.villo.domain.todo.service.TodoService;
 import com.villo.global.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -24,6 +22,15 @@ public class TodoController {
             @AuthenticationPrincipal Long userId
     ) {
         return ApiResponse.ok("오늘의 퀘스트 목록입니다.", todoService.getTodayTodos(userId));
+    }
+
+    // AI 분석
+    @PostMapping("/analyze")
+    public ApiResponse<TodoAiResultResponse> analyzeTodo(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody TodoAnalyzeRequest request
+    ) {
+        return ApiResponse.ok("AI 분석이 완료되었습니다.", todoService.analyzeTodo(request.title()));
     }
 
     // 투두 등록
@@ -53,5 +60,14 @@ public class TodoController {
     ) {
         todoService.deleteTodo(userId, todoId);
         return ApiResponse.ok("퀘스트가 삭제되었습니다.");
+    }
+
+    // AI 재분석
+    @PostMapping("/{todoId}/reanalyze")
+    public ApiResponse<TodoResponse> reanalyzeTodo(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long todoId
+    ) {
+        return ApiResponse.ok("재분석이 완료되었습니다.", todoService.reanalyzeTodo(userId, todoId));
     }
 }
