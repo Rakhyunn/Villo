@@ -23,6 +23,9 @@ public enum ErrorCode {
     // 투두
     TODO_NOT_FOUND("404-4", HttpStatus.NOT_FOUND, "퀘스트를 찾을 수 없습니다."),
 
+    // AI
+    AI_ANALYSIS_FAILED("500-2", HttpStatus.INTERNAL_SERVER_ERROR, "AI 분석에 실패했습니다."),
+
     // 마을
     VILLAGE_NOT_FOUND("404-3", HttpStatus.NOT_FOUND, "마을을 찾을 수 없습니다."),
     ;
