@@ -4,7 +4,6 @@ import com.villo.global.exception.CustomException;
 import com.villo.global.rq.Rq;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -28,8 +26,7 @@ public class JwtFilter extends OncePerRequestFilter {
     // 인증 없이 통과할 경로
     private static final List<String> PERMIT_URLS = List.of(
             "/oauth2/",
-            "/login/oauth2/",
-            "/api/v1/auth/"
+            "/login/oauth2/"
     );
 
     @Override
