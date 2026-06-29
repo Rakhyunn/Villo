@@ -31,7 +31,7 @@ public class Todo extends BaseEntity {
     private String category;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private Difficulty difficulty;
 
     @Column(nullable = false)
