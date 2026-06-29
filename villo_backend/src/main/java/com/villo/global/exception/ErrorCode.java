@@ -20,9 +20,13 @@ public enum ErrorCode {
     DUPLICATE_NICKNAME("409-1", HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     USER_NOT_FOUND("404-2", HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
 
-    // 투두 (구현하면서 추가 예정)
+    // 투두
+    TODO_NOT_FOUND("404-4", HttpStatus.NOT_FOUND, "퀘스트를 찾을 수 없습니다."),
 
-    // 마을 (구현하면서 추가 예정)
+    // AI
+    AI_ANALYSIS_FAILED("500-2", HttpStatus.INTERNAL_SERVER_ERROR, "AI 분석에 실패했습니다."),
+
+    // 마을
     VILLAGE_NOT_FOUND("404-3", HttpStatus.NOT_FOUND, "마을을 찾을 수 없습니다."),
     ;
 

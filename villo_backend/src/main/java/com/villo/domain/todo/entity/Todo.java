@@ -27,11 +27,11 @@ public class Todo extends BaseEntity {
     @Column(nullable = false, length = 200)
     private String title;
 
-    @Column(nullable = false, length = 50)
+    @Column(length = 50)
     private String category;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private Difficulty difficulty;
 
     @Column(nullable = false)
