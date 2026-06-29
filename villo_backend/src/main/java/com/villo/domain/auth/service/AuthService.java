@@ -19,6 +19,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UserVillageRepository userVillageRepository;
     private final JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
     private final Rq rq;
 
     // 닉네임 중복 확인
@@ -49,11 +50,37 @@ public class AuthService {
                     .orElseThrow(() -> new CustomException(ErrorCode.VILLAGE_NOT_FOUND));
             village.updateVillageName(request.villageName());
         }
+    }
 
-        // 새 토큰 재발급
-        String accessToken = jwtProvider.generateAccessToken(userId);
-        String refreshToken = jwtProvider.generateRefreshToken(userId);
-        rq.setAccessTokenCookie(accessToken);
-        rq.setRefreshTokenCookie(refreshToken);
+    // Access Token 재발급 (Refresh Token Rotation)
+    public void reissueToken(String refreshToken) {
+        // Refresh Token 유효성 검증
+        if (!jwtProvider.isValid(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        Long userId = jwtProvider.getUserId(refreshToken);
+
+        // Redis에 저장된 토큰과 비교
+        if (!refreshTokenService.isValid(userId, refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        // 새 토큰 발급
+        String newAccessToken = jwtProvider.generateAccessToken(userId);
+        String newRefreshToken = jwtProvider.generateRefreshToken(userId);
+
+        // Refresh Token Rotation
+        refreshTokenService.rotate(userId, newRefreshToken);
+
+        // 쿠키 설정
+        rq.setAccessTokenCookie(newAccessToken);
+        rq.setRefreshTokenCookie(newRefreshToken);
+    }
+
+    // 로그아웃
+    public void logout(Long userId) {
+        refreshTokenService.delete(userId);
+        rq.deleteAuthCookies();
     }
 }
