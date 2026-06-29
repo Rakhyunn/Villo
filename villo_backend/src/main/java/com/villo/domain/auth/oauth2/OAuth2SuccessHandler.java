@@ -1,5 +1,6 @@
 package com.villo.domain.auth.oauth2;
 
+import com.villo.domain.auth.service.RefreshTokenService;
 import com.villo.global.jwt.JwtProvider;
 import com.villo.global.rq.Rq;
 import jakarta.servlet.ServletException;
@@ -19,6 +20,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
     private final Rq rq;
 
     @Value("${app.frontend.base-url}")
@@ -36,6 +38,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // JWT 발급
         String accessToken = jwtProvider.generateAccessToken(userId);
         String refreshToken = jwtProvider.generateRefreshToken(userId);
+
+        // Redis에 Refresh Token 저장
+        refreshTokenService.save(userId, refreshToken);
 
         // 쿠키 설정
         rq.setAccessTokenCookie(accessToken);
