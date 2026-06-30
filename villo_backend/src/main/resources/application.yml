@@ -65,3 +65,11 @@ app:
 groq:
   api-key: ${GROQ_API_KEY}
   model: llama-3.1-8b-instant
+
+aws:
+  s3:
+    bucket: ${R2_BUCKET}
+    region: auto
+    access-key: ${R2_ACCESS_KEY}
+    secret-key: ${R2_SECRET_KEY}
+    endpoint: ${R2_ENDPOINT}
