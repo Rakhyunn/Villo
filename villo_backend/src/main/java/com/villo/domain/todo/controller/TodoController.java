@@ -1,6 +1,7 @@
 package com.villo.domain.todo.controller;
 
 import com.villo.domain.todo.dto.*;
+import com.villo.domain.todo.service.TodoCompletionService;
 import com.villo.domain.todo.service.TodoService;
 import com.villo.global.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -15,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TodoController {
     private final TodoService todoService;
+    private final TodoCompletionService todoCompletionService;
 
     // 오늘의 투두 목록 조회
     @GetMapping
@@ -69,5 +71,14 @@ public class TodoController {
             @PathVariable Long todoId
     ) {
         return ApiResponse.ok("재분석이 완료되었습니다.", todoService.reanalyzeTodo(userId, todoId));
+    }
+
+    // 투두 완료 처리
+    @PostMapping("/{todoId}/complete")
+    public ApiResponse<TodoCompletionResponse> completeTodo(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long todoId
+    ) {
+        return ApiResponse.ok("퀘스트를 완료했습니다.", todoCompletionService.completeTodo(userId, todoId));
     }
 }
