@@ -24,6 +24,8 @@ public enum ErrorCode {
     TODO_NOT_FOUND("404-4", HttpStatus.NOT_FOUND, "퀘스트를 찾을 수 없습니다."),
     ALREADY_COMPLETED("400-3", HttpStatus.BAD_REQUEST, "이미 완료된 퀘스트입니다."),
     TODO_ALREADY_CANCELLED("400-4", HttpStatus.BAD_REQUEST, "삭제된 퀘스트는 완료할 수 없습니다."),
+    REPEAT_ALREADY_EXISTS("409-2", HttpStatus.CONFLICT, "이미 반복 설정이 존재합니다."),
+    REPEAT_CONFIG_NOT_FOUND("404-6", HttpStatus.NOT_FOUND, "반복 설정을 찾을 수 없습니다."),
 
     // AI
     AI_ANALYSIS_FAILED("500-2", HttpStatus.INTERNAL_SERVER_ERROR, "AI 분석에 실패했습니다."),
