@@ -65,4 +65,14 @@ public class Todo extends BaseEntity {
     public void updateTitle(String title) {
         this.title = title;
     }
+
+    // 반복 투두로 설정
+    public void markAsRepeat() {
+        this.isRepeat = true;
+    }
+
+    // 반복 투두 해제
+    public void unmarkAsRepeat() {
+        this.isRepeat = false;
+    }
 }

@@ -24,6 +24,7 @@ public class TodoService {
     private final TodoRepository todoRepository;
     private final UserRepository userRepository;
     private final TodoAiService todoAiService;
+    private final RepeatConfigService repeatConfigService;
 
     // 오늘의 투두 목록 조회
     @Transactional(readOnly = true)
@@ -59,7 +60,19 @@ public class TodoService {
                 .status(TodoStatus.PENDING)
                 .build();
 
-        return TodoResponse.from(todoRepository.save(todo));
+        Todo savedTodo = todoRepository.save(todo);
+
+        // 반복인데 반복 설정이 없는 경
+        if (request.isRepeat() && request.repeatConfig() == null) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        // 반복 설정이 있으면 같이 생성
+        if (request.isRepeat()) {
+            repeatConfigService.createRepeatConfigInternal(savedTodo, request.repeatConfig());
+        }
+
+        return TodoResponse.from(savedTodo);
     }
 
     // 투두 수정 + AI 재분석

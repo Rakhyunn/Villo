@@ -33,8 +33,14 @@ public class RepeatConfig extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime nextRunDate;
 
-    // 다음 실행 시각 업데이트 (Spring Batch)
-    public void updateNextRunDate(LocalDateTime nextRunDate) {
+    public void update(RepeatType repeatType, String repeatValue, LocalDate endDate, LocalDateTime nextRunDate) {
+        this.repeatType = repeatType;
+        this.repeatValue = repeatValue;
+        this.endDate = endDate;
         this.nextRunDate = nextRunDate;
+    }
+
+    public void updateNextRunDate(LocalDateTime date) {
+        this.nextRunDate = date;
     }
 }
