@@ -39,4 +39,8 @@ public class RepeatConfig extends BaseEntity {
         this.endDate = endDate;
         this.nextRunDate = nextRunDate;
     }
+
+    public void updateNextRunDate(LocalDateTime date) {
+        this.nextRunDate = date;
+    }
 }
