@@ -18,6 +18,8 @@ public record TodoCreateRequest(
         @Max(value = 200, message = "골드는 200 이하여야 합니다.")
         int gold,
 
-        boolean isRepeat
+        boolean isRepeat,
+
+        RepeatConfigRequest repeatConfig
 ) {
 }
