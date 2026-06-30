@@ -40,6 +40,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     // OAuth2
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    // aws
+    implementation("software.amazon.awssdk:s3:2.25.6")
 }
 
 tasks.withType<Test> {
