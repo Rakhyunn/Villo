@@ -96,7 +96,7 @@ public class TodoService {
     }
 
     // 공통 — 투두 조회 + 본인 확인
-    private Todo getTodoByIdAndUserId(Long todoId, Long userId) {
+    public Todo getTodoByIdAndUserId(Long todoId, Long userId) {
         Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(() -> new CustomException(ErrorCode.TODO_NOT_FOUND));
 
