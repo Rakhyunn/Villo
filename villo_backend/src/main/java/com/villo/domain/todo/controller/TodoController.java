@@ -4,6 +4,7 @@ import com.villo.domain.todo.dto.*;
 import com.villo.domain.todo.service.TodoCompletionService;
 import com.villo.domain.todo.service.TodoService;
 import com.villo.global.response.ApiResponse;
+import com.villo.global.s3.S3Service;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TodoController {
     private final TodoService todoService;
+    private final S3Service s3Service;
     private final TodoCompletionService todoCompletionService;
 
     // 오늘의 투두 목록 조회
@@ -80,5 +82,27 @@ public class TodoController {
             @PathVariable Long todoId
     ) {
         return ApiResponse.ok("퀘스트를 완료했습니다.", todoCompletionService.completeTodo(userId, todoId));
+    }
+
+    // 사진 업로드용 Presigned URL 발급
+    @PostMapping("/images/presigned-url")
+    public ApiResponse<PresignedUrlResponse> getPresignedUrl(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody PresignedUrlRequest request
+    ) {
+        var result = s3Service.generatePresignedUrl(request.fileName());
+        return ApiResponse.ok("업로드 URL이 발급되었습니다.",
+                new PresignedUrlResponse(result.uploadUrl(), result.imageUrl()));
+    }
+
+    // 사진 인증 완료 처리
+    @PostMapping("/{todoId}/certify")
+    public ApiResponse<TodoCertifyResponse> certifyTodo(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long todoId,
+            @Valid @RequestBody TodoCertifyRequest request
+    ) {
+        return ApiResponse.ok("퀘스트 인증이 완료되었습니다.",
+                todoCompletionService.certifyTodo(userId, todoId, request));
     }
 }
