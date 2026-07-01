@@ -95,19 +95,6 @@ public class TodoService {
         todo.cancel(); // 소프트 딜리트 (CANCELLED 처리)
     }
 
-    // AI 재분석
-    @Transactional
-    public TodoResponse reanalyzeTodo(Long userId, Long todoId) {
-        Todo todo = getTodoByIdAndUserId(todoId, userId);
-
-        // AI 재분석
-        TodoAiResultResponse aiResult = todoAiService.analyze(todo.getTitle());
-
-        todo.updateAiResult(aiResult.category(), aiResult.difficulty(), aiResult.gold());
-
-        return TodoResponse.from(todo);
-    }
-
     // 공통 — 투두 조회 + 본인 확인
     public Todo getTodoByIdAndUserId(Long todoId, Long userId) {
         Todo todo = todoRepository.findById(todoId)
