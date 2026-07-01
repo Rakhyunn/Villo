@@ -4,6 +4,11 @@ import com.villo.domain.auth.entity.User;
 import com.villo.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(
@@ -30,4 +35,11 @@ public class TodoCompletion extends BaseEntity {
 
     @Column(nullable = false)
     private int earnedGold = 0;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime completedDate;
+
+    @OneToMany(mappedBy = "todoCompletion", fetch = FetchType.LAZY)
+    private List<TodoCompletionImage> images = new ArrayList<>();
 }
