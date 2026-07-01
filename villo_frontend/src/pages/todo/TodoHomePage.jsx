@@ -1,28 +1,80 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../components/common/BottomNav'
-
-// TODO: GET /api/v1/todos 연동 후 실제 데이터로 교체 (현재는 틀만)
-const MOCK = {
-  nickname: '',
-  totalGold: 0,
-  done: 0,
-  total: 0,
-}
+import TodoCard from '../../components/todo/TodoCard'
+import { getTodayTodos, completeTodo } from '../../api/todo'
 
 // 골드 칩
 function GoldChip({ amount }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[12px] font-bold text-amber-dark">
       <span>🪙</span>
-      {amount.toLocaleString()} G
+      {amount == null ? '—' : amount.toLocaleString()} G
     </span>
   )
 }
 
 export default function TodoHomePage() {
   const navigate = useNavigate()
-  const { nickname, totalGold, done, total } = MOCK
-  const percent = total > 0 ? Math.round((done / total) * 100) : 0
+
+  const [todos, setTodos] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [busyId, setBusyId] = useState(null)
+
+  // 헤더 골드 — 초기 로드에는 출처가 없어 완료 응답의 totalGold로만 갱신 (백엔드 프로필/요약 엔드포인트 필요)
+  const [totalGold, setTotalGold] = useState(null)
+  const [toast, setToast] = useState('')
+
+  // 소프트딜리트(CANCELLED)는 숨김
+  const visibleTodos = todos.filter((t) => t.status !== 'CANCELLED')
+  const doneCount = visibleTodos.filter((t) => t.status === 'COMPLETED').length
+  const totalCount = visibleTodos.length
+  const percent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
+
+  useEffect(() => {
+    getTodayTodos()
+      .then((data) => setTodos(data ?? []))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
+  }, [])
+
+  // 토스트 자동 사라짐
+  const showToast = (msg) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 2000)
+  }
+
+  // 일반 완료
+  const handleComplete = async (todo) => {
+    setBusyId(todo.id)
+    try {
+      const result = await completeTodo(todo.id)
+      setTodos((prev) =>
+        prev.map((t) =>
+          t.id === todo.id ? { ...t, status: 'COMPLETED' } : t,
+        ),
+      )
+      setTotalGold(result.totalGold)
+      showToast(
+        result.earnedGold > 0
+          ? `+${result.earnedGold} G 획득!`
+          : '오늘 골드 한도를 모두 채웠어요',
+      )
+    } catch (err) {
+      showToast(err.response?.data?.msg ?? '완료 처리에 실패했어요')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  // 사진 인증 화면으로 이동 (투두 정보 전달)
+  const handleCertify = (todo) =>
+    navigate(`/todos/${todo.id}/certify`, { state: { todo } })
+
+  // 편집 화면으로 이동 (투두 정보 전달)
+  const handleEdit = (todo) =>
+    navigate(`/todos/${todo.id}/edit`, { state: { todo } })
 
   return (
     <div className="flex min-h-screen justify-center bg-background">
@@ -31,9 +83,7 @@ export default function TodoHomePage() {
         <header className="shrink-0 bg-primary px-5 pb-5 pt-6">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[12px] text-green-medium">
-                {nickname ? `${nickname}님, 안녕하세요` : '안녕하세요'}
-              </p>
+              <p className="text-[12px] text-green-medium">안녕하세요</p>
               <h1 className="mt-0.5 text-[20px] font-bold text-white">
                 오늘의 퀘스트
               </h1>
@@ -46,7 +96,7 @@ export default function TodoHomePage() {
             <div className="mb-1 flex items-center justify-between text-[11px] text-green-light">
               <span>오늘 진행률</span>
               <span>
-                {done}/{total} 완료
+                {doneCount}/{totalCount} 완료
               </span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-white/25">
@@ -60,7 +110,15 @@ export default function TodoHomePage() {
 
         {/* 본문 */}
         <main className="flex-grow space-y-3 overflow-y-auto px-5 py-5 pb-24">
-          {total === 0 ? (
+          {loading ? (
+            <p className="py-20 text-center text-[13px] text-text-muted">
+              불러오는 중...
+            </p>
+          ) : error ? (
+            <p className="py-20 text-center text-[13px] text-error">
+              목록을 불러오지 못했어요
+            </p>
+          ) : totalCount === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-20 text-center">
               <span className="text-[40px]">🌱</span>
               <p className="text-[14px] font-semibold text-text-sub">
@@ -71,10 +129,25 @@ export default function TodoHomePage() {
               </p>
             </div>
           ) : (
-            // TODO: 투두 카드 목록 렌더링
-            null
+            visibleTodos.map((todo) => (
+              <TodoCard
+                key={todo.id}
+                todo={todo}
+                busy={busyId === todo.id}
+                onComplete={handleComplete}
+                onCertify={handleCertify}
+                onEdit={handleEdit}
+              />
+            ))
           )}
         </main>
+
+        {/* 토스트 */}
+        {toast && (
+          <div className="pointer-events-none absolute bottom-32 left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full bg-text px-4 py-2 text-[13px] font-semibold text-white shadow-lg">
+            {toast}
+          </div>
+        )}
 
         {/* FAB — 퀘스트 추가 */}
         <button
