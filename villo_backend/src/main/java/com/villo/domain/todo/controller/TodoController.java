@@ -66,15 +66,6 @@ public class TodoController {
         return ApiResponse.ok("퀘스트가 삭제되었습니다.");
     }
 
-    // AI 재분석
-    @PostMapping("/{todoId}/reanalyze")
-    public ApiResponse<TodoResponse> reanalyzeTodo(
-            @AuthenticationPrincipal Long userId,
-            @PathVariable Long todoId
-    ) {
-        return ApiResponse.ok("재분석이 완료되었습니다.", todoService.reanalyzeTodo(userId, todoId));
-    }
-
     // 투두 완료 처리
     @PostMapping("/{todoId}/complete")
     public ApiResponse<TodoCompletionResponse> completeTodo(
