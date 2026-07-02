@@ -56,6 +56,14 @@ public class VillageController {
                 villagePeopleService.buyVillager(userId, villagePeopleId));
     }
 
+    // 내 보유 주민 목록 (배치 여부 포함)
+    @GetMapping("/people/my")
+    public ApiResponse<List<UserVillagePeopleResponse>> getMyVillagers(
+            @AuthenticationPrincipal Long userId
+    ) {
+        return ApiResponse.ok("보유 주민 조회 성공", villagePeopleService.getMyVillagers(userId));
+    }
+
     // 배치 현황 조회
     @GetMapping("/placements")
     public ApiResponse<List<VillagePlacementResponse>> getPlacements(
