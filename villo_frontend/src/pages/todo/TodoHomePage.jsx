@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../components/common/BottomNav'
 import TodoCard from '../../components/todo/TodoCard'
 import { getTodayTodos, completeTodo } from '../../api/todo'
+import { getMyProfile } from '../../api/mypage'
 
 // 골드 칩
 function GoldChip({ amount }) {
@@ -22,7 +23,7 @@ export default function TodoHomePage() {
   const [error, setError] = useState(false)
   const [busyId, setBusyId] = useState(null)
 
-  // 헤더 골드 — 초기 로드에는 출처가 없어 완료 응답의 totalGold로만 갱신 (백엔드 프로필/요약 엔드포인트 필요)
+  // 헤더 골드 — 초기 로드는 /my/profile, 완료 시 completion 응답의 totalGold로 갱신
   const [totalGold, setTotalGold] = useState(null)
   const [toast, setToast] = useState('')
 
@@ -37,6 +38,11 @@ export default function TodoHomePage() {
       .then((data) => setTodos(data ?? []))
       .catch(() => setError(true))
       .finally(() => setLoading(false))
+
+    // 헤더 누적 골드 초기값
+    getMyProfile()
+      .then((p) => setTotalGold(p.totalGold))
+      .catch(() => {})
   }, [])
 
   // 토스트 자동 사라짐

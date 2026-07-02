@@ -77,7 +77,7 @@ export default function NicknamePage() {
     setSubmitting(true);
     try {
       await setNickname(nickname, villageName.trim() || null);
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (err) {
       setNickStatus("error");
       setNickMessage(
