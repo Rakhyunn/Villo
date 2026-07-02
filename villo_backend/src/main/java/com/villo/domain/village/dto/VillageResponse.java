@@ -1,27 +1,25 @@
 package com.villo.domain.village.dto;
 
 import com.villo.domain.village.entity.UserVillage;
+import com.villo.domain.village.entity.type.VillageLevelPolicy;
 
 public record VillageResponse(
         Long id,
         String villageName,
         int villageLevel,
-        int gridSize    // 레벨에 따른 그리드 크기(5, 7, 10)
+        int gridSize,
+        int villagerCount,
+        Integer nextLevelThreshold
 ) {
-    public static VillageResponse from(UserVillage village) {
+    public static VillageResponse of(UserVillage village, int villagerCount) {
+        int level = village.getVillageLevel();
         return new VillageResponse(
                 village.getId(),
                 village.getVillageName(),
-                village.getVillageLevel(),
-                calculateGridSize(village.getVillageLevel())
+                level,
+                VillageLevelPolicy.getGridSize(level),
+                villagerCount,
+                VillageLevelPolicy.getNextLevelThreshold(level)
         );
-    }
-
-    private static int calculateGridSize(int level) {
-        return switch (level) {
-            case 2 -> 7;
-            case 3 -> 10;
-            default -> 5;
-        };
     }
 }
