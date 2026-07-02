@@ -34,6 +34,10 @@ public enum ErrorCode {
     VILLAGE_NOT_FOUND("404-3", HttpStatus.NOT_FOUND, "마을을 찾을 수 없습니다."),
     VILLAGER_NOT_FOUND("404-7", HttpStatus.NOT_FOUND, "주민을 찾을 수 없습니다."),
     NOT_ENOUGH_GOLD("400-5", HttpStatus.BAD_REQUEST, "골드가 부족합니다."),
+    ALREADY_PLACED_VILLAGER("409-3", HttpStatus.CONFLICT, "이미 배치된 주민입니다."),
+    ALREADY_OCCUPIED_TILE("409-4", HttpStatus.CONFLICT, "이미 다른 주민이 배치된 칸입니다."),
+    PLACEMENT_NOT_FOUND("404-8", HttpStatus.NOT_FOUND, "배치 정보를 찾을 수 없습니다."),
+    INVALID_GRID_POSITION("400-6", HttpStatus.BAD_REQUEST, "유효하지 않은 배치 좌표입니다."),
     ;
 
     private final String resultCode;
