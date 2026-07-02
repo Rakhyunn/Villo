@@ -35,8 +35,8 @@ public class InitData {
         }
 
         // COMMON
-        villagePeopleRepository.save(createVillager("곰돌이", VillagerGrade.COMMON, 100,
-                "🐻", "순박하고 든든한 마을의 큰형님"));
+        villagePeopleRepository.save(createVillager("콩콩이", VillagerGrade.COMMON, 100,
+                "🐰", "방방 뛰어다니는 활발한 토끼"));
         villagePeopleRepository.save(createVillager("토실이", VillagerGrade.COMMON, 100,
                 "🐿️", "먹는 것 좋아하는 통통한 다람쥐"));
         villagePeopleRepository.save(createVillager("몽이", VillagerGrade.COMMON, 120,
@@ -49,14 +49,14 @@ public class InitData {
                 "🦊", "영리하고 재빠른 여우, 비 오는 날을 좋아함"));
         villagePeopleRepository.save(createVillager("부엉이", VillagerGrade.RARE, 300,
                 "🦉", "밤에만 활동하는 지혜로운 학자"));
-        villagePeopleRepository.save(createVillager("콩콩이", VillagerGrade.RARE, 350,
-                "🐰", "방방 뛰어다니는 활발한 토끼"));
+        villagePeopleRepository.save(createVillager("곰돌이", VillagerGrade.RARE, 350,
+                "🐻", "순박하고 든든한 마을의 큰형님"));
 
         // EPIC
         villagePeopleRepository.save(createVillager("사자킹", VillagerGrade.EPIC, 600,
                 "🦁", "마을을 지키는 용맹한 리더"));
-        villagePeopleRepository.save(createVillager("별빛이", VillagerGrade.EPIC, 800,
-                "🌟", "밤하늘 별을 좋아하는 신비로운 여우"));
+        villagePeopleRepository.save(createVillager("호랭이", VillagerGrade.EPIC, 800,
+                "🐯", "산속에서 수련한 무뚝뚝한 무술 고수"));
 
         // LEGENDARY
         villagePeopleRepository.save(createVillager("유니콘", VillagerGrade.LEGENDARY, 2000,
