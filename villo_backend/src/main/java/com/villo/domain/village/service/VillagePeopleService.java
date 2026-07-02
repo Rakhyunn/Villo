@@ -2,6 +2,7 @@ package com.villo.domain.village.service;
 
 import com.villo.domain.auth.entity.User;
 import com.villo.domain.auth.repository.UserRepository;
+import com.villo.domain.village.dto.UserVillagePeopleResponse;
 import com.villo.domain.village.dto.VillagePeopleResponse;
 import com.villo.domain.village.entity.UserVillage;
 import com.villo.domain.village.entity.UserVillagePeople;
@@ -10,6 +11,7 @@ import com.villo.domain.village.entity.type.VillagerGrade;
 import com.villo.domain.village.repository.UserVillagePeopleRepository;
 import com.villo.domain.village.repository.UserVillageRepository;
 import com.villo.domain.village.repository.VillagePeopleRepository;
+import com.villo.domain.village.repository.VillagePlacementRepository;
 import com.villo.global.exception.CustomException;
 import com.villo.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,27 @@ public class VillagePeopleService {
     private final UserVillageRepository userVillageRepository;
     private final UserVillagePeopleRepository userVillagePeopleRepository;
     private final UserRepository userRepository;
+    private final VillagePlacementRepository villagePlacementRepository;
+
+    // 내 보유 주민 목록 조회 (배치 여부 포함)
+    @Transactional(readOnly = true)
+    public List<UserVillagePeopleResponse> getMyVillagers(Long userId) {
+        List<UserVillagePeople> myVillagers = userVillagePeopleRepository.findByUserId(userId);
+
+        UserVillage userVillage = userVillageRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.VILLAGE_NOT_FOUND));
+
+        // 배치된 UserVillagePeople ID 목록 조회
+        Set<Long> placedIds = villagePlacementRepository
+                .findByUserVillageId(userVillage.getId())
+                .stream()
+                .map(placement -> placement.getUserVillagePeople().getId())
+                .collect(Collectors.toSet());
+
+        return myVillagers.stream()
+                .map(uvp -> UserVillagePeopleResponse.of(uvp, placedIds.contains(uvp.getId())))
+                .toList();
+    }
 
     // 주민 목록 조회 (등급별 필터, null이면 전체)
     @Transactional(readOnly = true)
