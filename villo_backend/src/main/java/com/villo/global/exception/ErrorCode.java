@@ -32,6 +32,8 @@ public enum ErrorCode {
 
     // 마을
     VILLAGE_NOT_FOUND("404-3", HttpStatus.NOT_FOUND, "마을을 찾을 수 없습니다."),
+    VILLAGER_NOT_FOUND("404-7", HttpStatus.NOT_FOUND, "주민을 찾을 수 없습니다."),
+    NOT_ENOUGH_GOLD("400-5", HttpStatus.BAD_REQUEST, "골드가 부족합니다."),
     ;
 
     private final String resultCode;
