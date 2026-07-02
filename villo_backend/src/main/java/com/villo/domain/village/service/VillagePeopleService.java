@@ -7,6 +7,7 @@ import com.villo.domain.village.dto.VillagePeopleResponse;
 import com.villo.domain.village.entity.UserVillage;
 import com.villo.domain.village.entity.UserVillagePeople;
 import com.villo.domain.village.entity.VillagePeople;
+import com.villo.domain.village.entity.type.VillageLevelPolicy;
 import com.villo.domain.village.entity.type.VillagerGrade;
 import com.villo.domain.village.repository.UserVillagePeopleRepository;
 import com.villo.domain.village.repository.UserVillageRepository;
@@ -105,14 +106,9 @@ public class VillagePeopleService {
         int villagerCount = userVillagePeopleRepository.countByUserId(userId);
         int currentLevel = village.getVillageLevel();
 
-        // 레벨업 기준: Lv.1→2 (5명), Lv.2→3 (8명)
-        int requiredForNextLevel = switch (currentLevel) {
-            case 1 -> 5;
-            case 2 -> 8;
-            default -> Integer.MAX_VALUE; // Lv.3은 최대 레벨
-        };
+        Integer requiredForNextLevel = VillageLevelPolicy.getNextLevelThreshold(currentLevel);
 
-        if (villagerCount >= requiredForNextLevel && currentLevel < 3) {
+        if (requiredForNextLevel != null && villagerCount >= requiredForNextLevel) {
             village.levelUp();
         }
     }
