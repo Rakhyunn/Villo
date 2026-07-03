@@ -53,3 +53,78 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* ── 마을(동물의 숲 느낌) 애니메이션 ── */
+/* SVG 요소는 transform-box: fill-box로 자기 박스 기준 변형 */
+@keyframes villager-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3.5px);
+  }
+}
+@keyframes tree-sway {
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+@keyframes map-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes levelup-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.07);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes sparkle-float {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.5);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-26px) scale(1.15);
+  }
+}
+
+.villager-bob {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: villager-bob 1.8s ease-in-out infinite;
+}
+.tree-sway {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: tree-sway 3.4s ease-in-out infinite;
+}
+.village-map-enter {
+  animation: map-enter 0.55s ease-out both;
+}
+.village-levelup {
+  animation: levelup-pop 0.9s ease-out;
+}
+.village-sparkle {
+  animation: sparkle-float 1.4s ease-out forwards;
+}

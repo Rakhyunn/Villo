@@ -8,6 +8,7 @@ import TodoEditPage from './pages/todo/TodoEditPage'
 import RepeatSettingPage from './pages/todo/RepeatSettingPage'
 import PhotoCertPage from './pages/todo/PhotoCertPage'
 import VillageMainPage from './pages/village/VillageMainPage'
+import VillageShopPage from './pages/village/VillageShopPage'
 import MyPage from './pages/mypage/MyPage'
 import MyCalendarPage from './pages/mypage/MyCalendarPage'
 
@@ -45,6 +46,7 @@ export default function App() {
 
         {/* 메인 (바텀 네비) */}
         <Route path="/village" element={app(<VillageMainPage />)} />
+        <Route path="/village/shop" element={app(<VillageShopPage />)} />
         <Route path="/my" element={app(<MyPage />)} />
         <Route path="/my/calendar" element={app(<MyCalendarPage />)} />
 
