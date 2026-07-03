@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../components/common/BottomNav'
 import BottomSheet from '../../components/common/BottomSheet'
+import VillagerSprite from '../../components/village/VillagerSprite'
 import { getShopVillagers, buyVillager } from '../../api/village'
 import { getMyProfile } from '../../api/mypage'
 
@@ -174,7 +175,7 @@ export default function VillageShopPage() {
                     key={v.id}
                     className="flex flex-col items-center rounded-2xl border border-border-base bg-white p-4"
                   >
-                    <span className="text-[40px]">{v.imageUrl}</span>
+                    <VillagerSprite emoji={v.imageUrl} size={58} />
                     <span className="mt-1 text-[14px] font-bold text-text">
                       {v.name}
                     </span>
@@ -221,7 +222,7 @@ export default function VillageShopPage() {
               <p className="mb-3 text-[16px] font-bold text-text">
                 주민을 영입할까요?
               </p>
-              <span className="text-[44px]">{selected.imageUrl}</span>
+              <VillagerSprite emoji={selected.imageUrl} size={72} bob />
               <span className="mt-1 text-[15px] font-bold text-text">
                 {selected.name}
               </span>

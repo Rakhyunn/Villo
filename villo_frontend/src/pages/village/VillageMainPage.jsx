@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../components/common/BottomNav'
 import BottomSheet from '../../components/common/BottomSheet'
 import VillageMap from '../../components/village/VillageMap'
+import VillagerSprite from '../../components/village/VillagerSprite'
 import {
   getMyVillage,
   getPlacements,
@@ -408,7 +409,7 @@ export default function VillageMainPage() {
                               : 'border-border-base bg-white'
                         }`}
                       >
-                        <span className="text-[24px]">{uv.imageUrl}</span>
+                        <VillagerSprite emoji={uv.imageUrl} size={40} />
                         <span className="text-[12px] font-bold text-text">
                           {uv.name}
                         </span>

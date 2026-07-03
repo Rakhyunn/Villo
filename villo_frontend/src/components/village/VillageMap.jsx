@@ -1,4 +1,6 @@
 // 아이소메트릭 마을 맵 (SVG) — 동물의 숲 느낌의 입체 섬 + 장식 + 애니메이션
+import VillagerSprite from './VillagerSprite'
+
 const TILE_W = 46
 const TILE_H = 23
 const DEPTH = 14 // 섬 두께(흙 단면)
@@ -132,30 +134,19 @@ export default function VillageMap({
         />
       ))}
 
-      {/* 주민 (그림자 + 통통 튀는 이모지) */}
+      {/* 주민 (동물 스프라이트 — 통통 튀는 애니메이션) */}
       {placements.map((p, i) => {
         const { cx, cy } = toScreen(p.gridX, p.gridY)
         return (
-          <g key={p.id} style={{ pointerEvents: 'none' }}>
-            <ellipse
-              cx={cx}
-              cy={cy + 2}
-              rx="12"
-              ry="4.5"
-              fill="rgba(0,0,0,0.14)"
-            />
-            <text
-              x={cx}
-              y={cy - TILE_H * 0.5}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize="26"
-              className="villager-bob"
-              style={{ animationDelay: `${(i % 5) * 0.28}s` }}
-            >
-              {p.villagerImageUrl}
-            </text>
-          </g>
+          <VillagerSprite
+            key={p.id}
+            emoji={p.villagerImageUrl}
+            cx={cx}
+            cy={cy + 2}
+            size={34}
+            bob
+            delay={(i % 5) * 0.28}
+          />
         )
       })}
 
