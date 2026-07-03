@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../../components/common/BottomNav'
 import BottomSheet from '../../components/common/BottomSheet'
@@ -14,6 +14,7 @@ import {
   updateVillageName,
 } from '../../api/village'
 import { getMyProfile } from '../../api/mypage'
+import { pickDialogue } from '../../data/villagerDialogues'
 
 // 골드 칩
 function GoldChip({ amount }) {
@@ -40,6 +41,8 @@ export default function VillageMainPage() {
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState('')
   const [celebrateLevel, setCelebrateLevel] = useState(null) // 레벨업 축하 연출
+  const [bubble, setBubble] = useState(null) // 배치 주민 탭 시 대화 말풍선
+  const bubbleTimerRef = useRef(null)
 
   // 마을 이름 변경 시트
   const [nameSheet, setNameSheet] = useState(false)
@@ -73,6 +76,37 @@ export default function VillageMainPage() {
       .then((prof) => setTotalGold(prof.totalGold))
       .catch(() => {})
   }, [])
+
+  // 타이머 정리
+  useEffect(
+    () => () => {
+      if (bubbleTimerRef.current) clearTimeout(bubbleTimerRef.current)
+    },
+    [],
+  )
+
+  // 편집 모드 진입 시 말풍선 닫기
+  useEffect(() => {
+    if (editMode) {
+      setBubble(null)
+      if (bubbleTimerRef.current) clearTimeout(bubbleTimerRef.current)
+    }
+  }, [editMode])
+
+  // 배치된 주민 탭 → 대화 말풍선 3초 (다른/같은 주민 탭 시 갱신·리셋)
+  const handleVillagerTap = (p) => {
+    const text = pickDialogue(p.villagerImageUrl)
+    setBubble({
+      key: Date.now(),
+      id: p.id,
+      gridX: p.gridX,
+      gridY: p.gridY,
+      name: p.villagerName,
+      text,
+    })
+    if (bubbleTimerRef.current) clearTimeout(bubbleTimerRef.current)
+    bubbleTimerRef.current = setTimeout(() => setBubble(null), 3000)
+  }
 
   const showToast = (msg) => {
     setToast(msg)
@@ -285,7 +319,7 @@ export default function VillageMainPage() {
                 : selectedPlacementId != null
                   ? '옮길 칸을 탭 (같은 칸 다시 탭 = 해제)'
                   : '주민을 선택하거나 배치된 주민을 탭하세요'
-              : '드래그로 이동'}
+              : '주민을 눌러 말을 걸어보세요'}
           </span>
           {!editMode && (
             <button
@@ -320,6 +354,8 @@ export default function VillageMainPage() {
                 editMode={editMode}
                 selectedCell={selectedCell}
                 onTileTap={handleTileTap}
+                onVillagerTap={editMode ? undefined : handleVillagerTap}
+                bubble={editMode ? null : bubble}
               />
             </div>
           )}
@@ -362,7 +398,7 @@ export default function VillageMainPage() {
           {!editMode && !loading && !error && (
             <div className="pointer-events-none absolute inset-x-0 bottom-[68px] flex justify-center">
               <span className="rounded-full bg-primary/80 px-3 py-1.5 text-[11px] font-semibold text-white">
-                🖐️ 슬라이드로 마을 탐험
+                🐾 주민을 눌러 인사해보세요
               </span>
             </div>
           )}

@@ -168,38 +168,28 @@ export default function VillageShopPage() {
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              {villagers.map((v) => {
-                const afford = canAfford(v.price)
-                return (
-                  <div
-                    key={v.id}
-                    className="flex flex-col items-center rounded-2xl border border-border-base bg-white p-4"
-                  >
-                    <VillagerSprite emoji={v.imageUrl} size={58} />
-                    <span className="mt-1 text-[14px] font-bold text-text">
-                      {v.name}
-                    </span>
-                    <div className="mt-1">
-                      <GradeTag grade={v.grade} />
-                    </div>
-                    <span className="mt-2 text-[14px] font-bold text-green-dark">
-                      🪙 {v.price.toLocaleString()} G
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => afford && setSelected(v)}
-                      disabled={!afford}
-                      className={`mt-3 w-full rounded-xl border py-2 text-[13px] font-bold transition ${
-                        afford
-                          ? 'border-primary bg-white text-primary active:scale-[0.98]'
-                          : 'cursor-not-allowed border-border-base bg-background text-text-muted'
-                      }`}
-                    >
-                      {afford ? '영입하기' : '골드 부족'}
-                    </button>
+              {villagers.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => setSelected(v)}
+                  className="flex flex-col items-center rounded-2xl border border-border-base bg-white p-4 text-center transition active:scale-[0.98]"
+                >
+                  <VillagerSprite emoji={v.imageUrl} size={58} />
+                  <span className="mt-1 text-[14px] font-bold text-text">
+                    {v.name}
+                  </span>
+                  <div className="mt-1">
+                    <GradeTag grade={v.grade} />
                   </div>
-                )
-              })}
+                  <span className="mt-2 text-[14px] font-bold text-green-dark">
+                    🪙 {v.price.toLocaleString()} G
+                  </span>
+                  <span className="mt-2 text-[11px] font-semibold text-text-muted">
+                    상세보기 ›
+                  </span>
+                </button>
+              ))}
             </div>
           )}
         </main>
@@ -217,54 +207,74 @@ export default function VillageShopPage() {
           onClose={() => !buying && setSelected(null)}
           title=""
         >
-          {selected && (
-            <div className="flex flex-col items-center">
-              <p className="mb-3 text-[16px] font-bold text-text">
-                주민을 영입할까요?
-              </p>
-              <VillagerSprite emoji={selected.imageUrl} size={72} bob />
-              <span className="mt-1 text-[15px] font-bold text-text">
-                {selected.name}
-              </span>
-              <div className="mt-1">
-                <GradeTag grade={selected.grade} />
-              </div>
-
-              <div className="mt-4 flex w-full items-center justify-between rounded-xl bg-background px-4 py-3">
-                <span className="text-[13px] text-text-sub">보유 골드</span>
-                <span className="text-[14px] font-bold text-text">
-                  {totalGold?.toLocaleString() ?? '—'} G →{' '}
-                  <span className="text-primary">
-                    {totalGold != null
-                      ? (totalGold - selected.price).toLocaleString()
-                      : '—'}{' '}
-                    G
+          {selected &&
+            (() => {
+              const afford = canAfford(selected.price)
+              const shortfall = (selected.price - (totalGold ?? 0)).toLocaleString()
+              return (
+                <div className="flex flex-col items-center">
+                  <VillagerSprite emoji={selected.imageUrl} size={84} bob />
+                  <span className="mt-1 text-[16px] font-bold text-text">
+                    {selected.name}
                   </span>
-                </span>
-              </div>
+                  <div className="mt-1">
+                    <GradeTag grade={selected.grade} />
+                  </div>
+                  {selected.description && (
+                    <p
+                      className="mt-2.5 px-3 text-center text-[13px] leading-relaxed text-text-sub"
+                      style={{ wordBreak: 'keep-all' }}
+                    >
+                      {selected.description}
+                    </p>
+                  )}
 
-              <div className="mt-4 flex w-full gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setSelected(null)}
-                  disabled={buying}
-                  className="h-12 flex-1 rounded-xl border border-border-base bg-white text-[14px] font-bold text-text-sub"
-                >
-                  취소
-                </button>
-                <button
-                  type="button"
-                  onClick={handleBuy}
-                  disabled={buying}
-                  className="h-12 flex-[1.6] rounded-xl bg-primary text-[14px] font-bold text-white shadow-lg transition active:scale-[0.98] disabled:opacity-60"
-                >
-                  {buying
-                    ? '영입 중...'
-                    : `영입하기 (-${selected.price.toLocaleString()} G)`}
-                </button>
-              </div>
-            </div>
-          )}
+                  <div className="mt-4 flex w-full items-center justify-between rounded-xl bg-background px-4 py-3">
+                    <span className="text-[13px] text-text-sub">보유 골드</span>
+                    <span className="text-[14px] font-bold text-text">
+                      {totalGold?.toLocaleString() ?? '—'} G
+                      {afford ? (
+                        <>
+                          {' → '}
+                          <span className="text-primary">
+                            {(totalGold - selected.price).toLocaleString()} G
+                          </span>
+                        </>
+                      ) : (
+                        <span className="ml-1 text-[12px] font-semibold text-error">
+                          ({shortfall} G 부족)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex w-full gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setSelected(null)}
+                      disabled={buying}
+                      className="h-12 flex-1 rounded-xl border border-border-base bg-white text-[14px] font-bold text-text-sub"
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="button"
+                      onClick={afford ? handleBuy : undefined}
+                      disabled={!afford || buying}
+                      className={`h-12 flex-[1.6] rounded-xl text-[14px] font-bold text-white shadow-lg transition active:scale-[0.98] disabled:opacity-60 ${
+                        afford ? 'bg-primary' : 'bg-text-muted'
+                      }`}
+                    >
+                      {buying
+                        ? '영입 중...'
+                        : afford
+                          ? `영입하기 (-${selected.price.toLocaleString()} G)`
+                          : '골드 부족'}
+                    </button>
+                  </div>
+                </div>
+              )
+            })()}
         </BottomSheet>
 
         <BottomNav />

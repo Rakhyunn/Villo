@@ -24,6 +24,8 @@ export default function VillageMap({
   editMode = false,
   selectedCell = null,
   onTileTap,
+  onVillagerTap,
+  bubble = null,
 }) {
   const pad = 40
   const width = gridSize * TILE_W + pad * 2
@@ -138,15 +140,28 @@ export default function VillageMap({
       {placements.map((p, i) => {
         const { cx, cy } = toScreen(p.gridX, p.gridY)
         return (
-          <VillagerSprite
-            key={p.id}
-            emoji={p.villagerImageUrl}
-            cx={cx}
-            cy={cy + 2}
-            size={34}
-            bob
-            delay={(i % 5) * 0.28}
-          />
+          <g key={p.id}>
+            <VillagerSprite
+              emoji={p.villagerImageUrl}
+              cx={cx}
+              cy={cy + 2}
+              size={34}
+              bob
+              delay={(i % 5) * 0.28}
+            />
+            {/* 일반 모드: 주민 탭 → 말풍선 (투명 히트 영역) */}
+            {!editMode && onVillagerTap && (
+              <ellipse
+                cx={cx}
+                cy={cy - 14}
+                rx="15"
+                ry="21"
+                fill="transparent"
+                style={{ cursor: 'pointer' }}
+                onClick={() => onVillagerTap(p)}
+              />
+            )}
+          </g>
         )
       })}
 
@@ -164,6 +179,32 @@ export default function VillageMap({
           {d.e}
         </text>
       ))}
+
+      {/* 주민 대화 말풍선 */}
+      {bubble &&
+        (() => {
+          const { cx, cy } = toScreen(bubble.gridX, bubble.gridY)
+          const bw = 126
+          const bh = 58
+          const bx = cx - bw / 2
+          const by = cy - 32 - bh
+          return (
+            <g key={bubble.key} className="village-bubble-g" style={{ pointerEvents: 'none' }}>
+              <polygon
+                points={`${cx - 7},${by + bh - 1} ${cx + 7},${by + bh - 1} ${cx},${by + bh + 9}`}
+                fill="#ffffff"
+                stroke="#e4e2dc"
+                strokeWidth="1.5"
+              />
+              <foreignObject x={bx} y={by} width={bw} height={bh} style={{ overflow: 'visible' }}>
+                <div xmlns="http://www.w3.org/1999/xhtml" className="village-bubble">
+                  <span className="vb-name">{bubble.name}</span>
+                  <span className="vb-text">{bubble.text}</span>
+                </div>
+              </foreignObject>
+            </g>
+          )
+        })()}
     </svg>
   )
 }
