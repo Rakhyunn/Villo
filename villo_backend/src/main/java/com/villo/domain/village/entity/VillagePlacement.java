@@ -25,10 +25,10 @@ public class VillagePlacement extends BaseEntity {
     @JoinColumn(name = "user_village_people_id", nullable = false)
     private UserVillagePeople userVillagePeople;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "grid_x")
     private int gridX;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "grid_y")
     private int gridY;
 
     // 배치 위치 변경
