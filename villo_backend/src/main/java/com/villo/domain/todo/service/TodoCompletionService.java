@@ -108,7 +108,7 @@ public class TodoCompletionService {
 
     // 공통 — 완료 처리 전 검증 + 필요한 데이터 준비
     private CompletionContext prepareCompletion(Long userId, Long todoId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Todo todo = todoService.getTodoByIdAndUserId(todoId, userId);
