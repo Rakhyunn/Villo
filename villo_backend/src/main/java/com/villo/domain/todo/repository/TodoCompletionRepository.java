@@ -30,4 +30,14 @@ public interface TodoCompletionRepository extends JpaRepository<TodoCompletion, 
             @Param("year") int year,
             @Param("month") int month
     );
+
+    // 최근 N일간의 완료 날짜 목록을 한 번에 조회 (연속 달성일 계산용)
+    @Query("""
+        select distinct cast(tc.completedDate as LocalDate)
+        from TodoCompletion tc
+        where tc.user.id = :userId
+        and tc.completedDate >= :fromDate
+        order by cast(tc.completedDate as LocalDate) desc
+    """)
+    List<LocalDate> findCompletedDatesSince(@Param("userId") Long userId, @Param("fromDate") LocalDateTime fromDate);
 }

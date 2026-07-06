@@ -16,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -92,23 +94,25 @@ public class MyPageService {
     // 연속 달성일 계산
     private int calculateConsecutiveDays(Long userId) {
         LocalDate today = LocalDate.now();
-        int consecutiveDays = 0;
+        LocalDateTime fromDate = today.minusDays(364).atStartOfDay();
 
-        for (int i = 0; i < 365; i++) {
-            LocalDate checkDate = today.minusDays(i);
-            LocalDateTime start = checkDate.atStartOfDay();
-            LocalDateTime end = checkDate.plusDays(1).atStartOfDay();
+        List<LocalDate> completedDates = todoCompletionRepository
+                .findCompletedDatesSince(userId, fromDate);
 
-            boolean hasCompletion = !todoCompletionRepository
-                    .findByUserIdAndCompletedDateBetween(userId, start, end)
-                    .isEmpty();
-
-            if (hasCompletion) {
-                consecutiveDays++;
-            } else {
-                break;
-            }
+        if (completedDates.isEmpty()) {
+            return 0;
         }
+
+        Set<LocalDate> completedDateSet = new HashSet<>(completedDates);
+
+        int consecutiveDays = 0;
+        LocalDate checkDate = today;
+
+        while (completedDateSet.contains(checkDate)) {
+            consecutiveDays++;
+            checkDate = checkDate.minusDays(1);
+        }
+
         return consecutiveDays;
     }
 }
