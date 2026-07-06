@@ -42,6 +42,7 @@ public class TodoCompletion extends BaseEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime completedDate;
 
+    @Builder.Default
     @OneToMany(mappedBy = "todoCompletion", fetch = FetchType.LAZY)
     private List<TodoCompletionImage> images = new ArrayList<>();
 }
