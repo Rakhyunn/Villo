@@ -23,6 +23,7 @@ public class TodoCompletionImage extends BaseEntity {
     @Column(nullable = false, length = 500)
     private String imageUrl;
 
+    @Builder.Default
     @Column(nullable = false)
     private int sortOrder = 0;
 }

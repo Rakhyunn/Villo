@@ -34,12 +34,15 @@ public class Todo extends BaseEntity {
     @Column
     private Difficulty difficulty;
 
+    @Builder.Default
     @Column(nullable = false)
     private int gold = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean isRepeat = false;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TodoStatus status = TodoStatus.PENDING;

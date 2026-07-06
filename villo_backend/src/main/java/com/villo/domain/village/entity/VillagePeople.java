@@ -30,6 +30,7 @@ public class VillagePeople extends BaseEntity {
     @Column(length = 300)
     private String description;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean isActive = true; // FALSE면 상점 비노출
 

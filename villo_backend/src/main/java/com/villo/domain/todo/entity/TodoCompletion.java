@@ -30,9 +30,11 @@ public class TodoCompletion extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean isCertified = false;
 
+    @Builder.Default
     @Column(nullable = false)
     private int earnedGold = 0;
 
