@@ -79,7 +79,7 @@ public class MyPageService {
         LocalDateTime end = date.plusDays(1).atStartOfDay();
 
         return todoCompletionRepository
-                .findByUserIdAndCompletedDateBetween(userId, start, end)
+                .findAllWithTodoAndImagesByUserIdAndCompletedDateBetween(userId, start, end)
                 .stream()
                 .map(MyDailyTodoResponse::from)
                 .toList();

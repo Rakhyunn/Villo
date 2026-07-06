@@ -16,8 +16,17 @@ public interface TodoCompletionRepository extends JpaRepository<TodoCompletion, 
     int countByUserId(Long userId);
 
     // 특정 날짜 완료 투두 조회
-    List<TodoCompletion> findByUserIdAndCompletedDateBetween(
-            Long userId, LocalDateTime start, LocalDateTime end
+    @Query("""
+        select distinct tc from TodoCompletion tc
+        join fetch tc.todo
+        left join fetch tc.images
+        where tc.user.id = :userId
+        and tc.completedDate >= :start and tc.completedDate < :end
+    """)
+    List<TodoCompletion> findAllWithTodoAndImagesByUserIdAndCompletedDateBetween(
+            @Param("userId") Long userId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
     );
 
     // 특정 월 완료 날짜 목록 조회
