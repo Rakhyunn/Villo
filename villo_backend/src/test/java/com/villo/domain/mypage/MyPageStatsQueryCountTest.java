@@ -83,7 +83,7 @@ public class MyPageStatsQueryCountTest {
     }
 
     @Test
-    void 연속_달성일_계산시_쿼리_개수_확인() {
+    void myPageStatsQueryCountTest() {
         // 통계 조회 1번 호출 → 내부에서 calculateConsecutiveDays 실행됨
         var stats = myPageService.getStats(userId);
 
