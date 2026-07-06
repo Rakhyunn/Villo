@@ -11,11 +11,13 @@ import com.villo.domain.todo.entity.type.TodoStatus;
 import com.villo.domain.todo.repository.TodoCompletionRepository;
 import com.villo.domain.todo.repository.TodoRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -79,7 +81,15 @@ public class MyPageStatsQueryCountTest {
                     .setParameter(2, completion.getId())
                     .executeUpdate();
         }
+        em.flush();
         em.clear();
+
+        // setUp까지의 트랜잭션을 커밋하고 세션 종료
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+
+        // 테스트 본문을 위한 새 트랜잭션(= 새 Session) 시작
+        TestTransaction.start();
     }
 
     @Test
