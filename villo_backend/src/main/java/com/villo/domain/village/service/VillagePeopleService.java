@@ -67,7 +67,7 @@ public class VillagePeopleService {
     // 주민 영입
     @Transactional
     public VillagePeopleResponse buyVillager(Long userId, Long villagePeopleId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         VillagePeople villagePeople = villagePeopleRepository.findById(villagePeopleId)

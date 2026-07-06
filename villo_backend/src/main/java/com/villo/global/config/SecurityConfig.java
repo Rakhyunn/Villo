@@ -50,7 +50,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/oauth2/**",
                                 "/login/oauth2/**",
-                                "/api/v1/auth/**"
+                                "/api/v1/auth/nickname/check",
+                                "/api/v1/auth/token/refresh"
                         ).permitAll()
                         // 나머지 모든 요청은 인증 필요
                         .anyRequest().authenticated()

@@ -30,9 +30,11 @@ public class TodoCompletion extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean isCertified = false;
 
+    @Builder.Default
     @Column(nullable = false)
     private int earnedGold = 0;
 
@@ -40,6 +42,7 @@ public class TodoCompletion extends BaseEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime completedDate;
 
+    @Builder.Default
     @OneToMany(mappedBy = "todoCompletion", fetch = FetchType.LAZY)
     private List<TodoCompletionImage> images = new ArrayList<>();
 }

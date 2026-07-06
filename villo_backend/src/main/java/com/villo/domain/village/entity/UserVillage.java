@@ -21,6 +21,7 @@ public class UserVillage extends BaseEntity {
     @Column(nullable = false, length = 100)
     private String villageName;
 
+    @Builder.Default
     @Column(nullable = false)
     private int villageLevel = 1;
 

@@ -33,9 +33,11 @@ public class User extends BaseEntity {
     @Column(name = "provider_id", nullable = false, length = 100)
     private String providerId;
 
+    @Builder.Default
     @Column(nullable = false)
     private int totalGold = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     private int dailyGold = 0;
 

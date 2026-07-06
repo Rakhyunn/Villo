@@ -11,6 +11,7 @@ import com.villo.domain.village.repository.VillagePlacementRepository;
 import com.villo.global.exception.CustomException;
 import com.villo.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +71,14 @@ public class VillagePlacementService {
                 .gridY(request.gridY())
                 .build();
 
-        return VillagePlacementResponse.from(villagePlacementRepository.save(placement));
+        // 유니크 제약 위반 커스텀 예외 처리
+        try {
+            return VillagePlacementResponse.from(
+                    villagePlacementRepository.saveAndFlush(placement)
+            );
+        } catch (DataIntegrityViolationException e) {
+            throw new CustomException(ErrorCode.ALREADY_OCCUPIED_TILE);
+        }
     }
 
     // 배치 위치 변경
