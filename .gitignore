@@ -4,3 +4,7 @@
 ### AI agent ###
 docs/
 *.md
+
+### infra ###
+infra/
+*.tf
