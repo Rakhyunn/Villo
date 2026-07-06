@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -90,14 +92,15 @@ public class TodoCompletionService {
         TodoCompletion savedCompletion = todoCompletionRepository.save(completion);
 
         // 인증 사진 저장
+        List<TodoCompletionImage> images = new ArrayList<>();
         for (int i = 0; i < request.imageUrls().size(); i++) {
-            TodoCompletionImage image = TodoCompletionImage.builder()
+            images.add(TodoCompletionImage.builder()
                     .todoCompletion(savedCompletion)
                     .imageUrl(request.imageUrls().get(i))
                     .sortOrder(i)
-                    .build();
-            todoCompletionImageRepository.save(image);
+                    .build());
         }
+        todoCompletionImageRepository.saveAll(images);
 
         log.info("사진 인증 완료: userId={}, todoId={}, earnedGold={}", userId, todoId, earnedGold);
 
