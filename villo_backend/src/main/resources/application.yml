@@ -62,6 +62,15 @@ app:
   frontend:
     base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
 groq:
   api-key: ${GROQ_API_KEY}
   model: llama-3.1-8b-instant
@@ -73,5 +82,4 @@ aws:
     access-key: ${R2_ACCESS_KEY}
     secret-key: ${R2_SECRET_KEY}
     endpoint: ${R2_ENDPOINT}
-    # 조회용 공개 URL (R2 Public Development URL 또는 커스텀 도메인). 버킷 루트로 매핑됨
     public-url: ${R2_PUBLIC_URL}

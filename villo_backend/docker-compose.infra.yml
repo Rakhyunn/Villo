@@ -1,0 +1,52 @@
+# 영속 인프라 스택 (mysql + redis + network) — 배포와 무관하게 항상 떠 있음
+# 앱(Spring)은 이 파일에 없음: CI(GitHub Actions)가 blue/green으로 villo-app-1/2 를 직접 관리
+# 실행:  docker compose -f docker-compose.infra.yml up -d
+# ※ docker-compose.prod.yml 과 같은 디렉터리에서 실행하므로 프로젝트명이 동일 →
+#   기존 볼륨(villo_backend_mysql_data / _redis_data)을 그대로 재사용 (데이터 보존)
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: villo-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: villo
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Seoul
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - villo-net
+
+  redis:
+    image: redis:7.0
+    container_name: villo-redis
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - villo-net
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  villo-net:
+    name: villo-net   # NPM·앱 컨테이너가 이 네트워크로 서로 컨테이너명 프록시
