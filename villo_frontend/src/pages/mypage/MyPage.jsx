@@ -46,7 +46,7 @@ function CheckIcon() {
 }
 
 // 설정 메뉴 한 줄
-function SettingRow({ icon, label, right, onClick }) {
+function SettingRow({ icon, label, onClick }) {
   return (
     <button
       type="button"
@@ -57,8 +57,7 @@ function SettingRow({ icon, label, right, onClick }) {
         <span className="text-[18px]">{icon}</span>
         <span className="text-[14px] font-semibold text-text">{label}</span>
       </span>
-      <span className="flex items-center gap-2 text-text-muted">
-        {right}
+      <span className="text-text-muted">
         <ChevronRight />
       </span>
     </button>
@@ -168,12 +167,7 @@ export default function MyPage() {
         <main className="flex-grow overflow-y-auto pb-24">
           {/* 헤더 (프로필) */}
           <header className="bg-primary px-5 pb-12 pt-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-[16px] font-bold text-white">마이페이지</h1>
-              <button type="button" aria-label="설정" className="text-white/90">
-                ⚙️
-              </button>
-            </div>
+            <h1 className="text-[16px] font-bold text-white">마이페이지</h1>
 
             <div className="mt-4 flex items-center gap-3">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[28px] shadow-sm">
@@ -257,20 +251,10 @@ export default function MyPage() {
                 onClick={openNickSheet}
               />
               <SettingRow
-                icon="🔔"
-                label="알림 설정"
-                right={
-                  <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-white">
-                    ON
-                  </span>
-                }
-              />
-              <SettingRow
                 icon="📊"
                 label="퀘스트 통계"
                 onClick={() => navigate('/my/calendar')}
               />
-              <SettingRow icon="❓" label="공지 / 문의" />
             </div>
           </section>
 
