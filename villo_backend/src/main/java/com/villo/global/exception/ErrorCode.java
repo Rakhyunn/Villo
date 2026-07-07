@@ -1,0 +1,46 @@
+package com.villo.global.exception;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+
+@Getter
+@RequiredArgsConstructor
+public enum ErrorCode {
+    // 공통
+    INVALID_INPUT("400-1", HttpStatus.BAD_REQUEST, "잘못된 입력입니다."),
+    UNAUTHORIZED("401-1", HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
+    FORBIDDEN("403-1", HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+    NOT_FOUND("404-1", HttpStatus.NOT_FOUND, "리소스를 찾을 수 없습니다."),
+    INTERNAL_SERVER_ERROR("500-1", HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
+
+    // 인증
+    EXPIRED_TOKEN("401-2", HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
+    INVALID_TOKEN("401-3", HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    DUPLICATE_NICKNAME("409-1", HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
+    USER_NOT_FOUND("404-2", HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+
+    // 투두
+    TODO_NOT_FOUND("404-4", HttpStatus.NOT_FOUND, "퀘스트를 찾을 수 없습니다."),
+    ALREADY_COMPLETED("400-3", HttpStatus.BAD_REQUEST, "이미 완료된 퀘스트입니다."),
+    TODO_ALREADY_CANCELLED("400-4", HttpStatus.BAD_REQUEST, "삭제된 퀘스트는 완료할 수 없습니다."),
+    REPEAT_ALREADY_EXISTS("409-2", HttpStatus.CONFLICT, "이미 반복 설정이 존재합니다."),
+    REPEAT_CONFIG_NOT_FOUND("404-6", HttpStatus.NOT_FOUND, "반복 설정을 찾을 수 없습니다."),
+
+    // AI
+    AI_ANALYSIS_FAILED("500-2", HttpStatus.INTERNAL_SERVER_ERROR, "AI 분석에 실패했습니다."),
+
+    // 마을
+    VILLAGE_NOT_FOUND("404-3", HttpStatus.NOT_FOUND, "마을을 찾을 수 없습니다."),
+    VILLAGER_NOT_FOUND("404-7", HttpStatus.NOT_FOUND, "주민을 찾을 수 없습니다."),
+    NOT_ENOUGH_GOLD("400-5", HttpStatus.BAD_REQUEST, "골드가 부족합니다."),
+    ALREADY_PLACED_VILLAGER("409-3", HttpStatus.CONFLICT, "이미 배치된 주민입니다."),
+    ALREADY_OCCUPIED_TILE("409-4", HttpStatus.CONFLICT, "이미 다른 주민이 배치된 칸입니다."),
+    PLACEMENT_NOT_FOUND("404-8", HttpStatus.NOT_FOUND, "배치 정보를 찾을 수 없습니다."),
+    INVALID_GRID_POSITION("400-6", HttpStatus.BAD_REQUEST, "유효하지 않은 배치 좌표입니다."),
+    ;
+
+    private final String resultCode;
+    private final HttpStatus httpStatus;
+    private final String message;
+}

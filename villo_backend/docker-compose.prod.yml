@@ -1,0 +1,78 @@
+# 배포용 (EC2) — app + mysql + redis 전부 컨테이너
+# 실행:  docker compose -f docker-compose.prod.yml up -d
+# 개발용(docker-compose.yml)과 별도로 관리
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: villo-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: villo
+      MYSQL_USER: ${DB_USERNAME}          # 앱 전용 계정 생성 (root 금지, 예: villo)
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Seoul
+    # 이모지(주민)·한글 저장 위해 utf8mb4
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql        # ⚠️ 데이터 영속 (컨테이너 지워도 유지)
+    # 외부 포트 노출 안 함 — 앱이 내부망에서 'mysql:3306'으로 접근
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - villo-net
+
+  redis:
+    image: redis:7.0
+    container_name: villo-redis
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]   # refresh token 유실 방지(영속)
+    volumes:
+      - redis_data:/data
+    # 외부 포트 노출 안 함 — 'redis:6379'로 접근
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - villo-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: villo-app
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: .env                         # OAuth/R2/Groq/JWT 등 시크릿 주입
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: mysql                        # application-prod.yml 의 ${DB_HOST}
+      REDIS_HOST: redis                     # application-prod.yml 의 ${REDIS_HOST}
+      TZ: Asia/Seoul
+      JAVA_TOOL_OPTIONS: "-Xmx384m"         # t3.micro(1GB) 힙 제한
+      # ⚠️ 최초 1회 스키마 생성용 — 첫 기동 성공 후 이 줄 주석 처리(validate 복귀)
+      # SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"                         # NPM(443)이 여기로 프록시
+    networks:
+      - villo-net
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  villo-net:
+    name: villo-net                         # NPM 연결 시: docker network connect villo-net npm_1
