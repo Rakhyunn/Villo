@@ -19,8 +19,8 @@ public class S3Service {
     @Value("${aws.s3.bucket}")
     private String bucket;
 
-    @Value("${aws.s3.endpoint}")
-    private String endpoint;
+    @Value("${aws.s3.public-url}")
+    private String publicUrl;
 
     // Presigned URL 발급 (업로드용, 5분 유효)
     public PresignedUrlResponse generatePresignedUrl(String originalFileName) {
@@ -39,7 +39,7 @@ public class S3Service {
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
 
         String uploadUrl = presignedRequest.url().toString();
-        String imageUrl = endpoint + "/" + bucket + "/" + key;
+        String imageUrl = publicUrl + "/" + key;
 
         return new PresignedUrlResponse(uploadUrl, imageUrl);
     }
