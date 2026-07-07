@@ -1,0 +1,213 @@
+name: backend-deploy
+
+# 백엔드 변경이 main 에 올라오면: 태그/릴리즈 → GHCR 이미지 빌드·푸시 → EC2 blue/green 무중단 배포
+# 무중단: NPM API로 업스트림(forward_host)을 새 컨테이너로 전환 후 옛 컨테이너 제거
+
+env:
+  IMAGE_REPOSITORY: villo-backend      # GHCR 이미지명 (소유자 제외)
+  CONTAINER_1_NAME: villo-app-1        # blue/green 슬롯1 (고정 이름)
+  CONTAINER_2_NAME: villo-app-2        # blue/green 슬롯2 (고정 이름)
+  CONTAINER_PORT: "8080"               # 스프링부트 내부 포트
+  EC2_INSTANCE_TAG_NAME: villo-ec2-1   # 배포 대상 EC2 Name 태그 (terraform prefix=villo)
+  DOCKER_NETWORK: villo-net            # NPM·DB·앱 공용 네트워크
+  BACKEND_DIR: villo_backend           # Dockerfile 위치 (모노레포)
+  ENV_FILE: /home/ssm-user/Villo/villo_backend/.env  # 인스턴스의 런타임 시크릿(.env)
+  DB_HOST: villo-mysql                 # 인프라 스택 컨테이너명
+  REDIS_HOST: villo-redis
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false            # 진행 중 배포는 끝까지 (교체 중 중단 방지)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/backend-deploy.yml"
+      - "villo_backend/src/**"
+      - "villo_backend/build.gradle.kts"
+      - "villo_backend/settings.gradle.kts"
+      - "villo_backend/gradle/**"
+      - "villo_backend/gradlew"
+      - "villo_backend/Dockerfile"
+
+permissions:
+  contents: write   # 태그/릴리즈 생성
+  packages: write   # GHCR 푸시
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # 1) 버전 태그 + 릴리즈
+  tag-release:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.tag.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create tag
+        id: tag
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.new_tag }}
+          name: Release ${{ steps.tag.outputs.new_tag }}
+          body: ${{ steps.tag.outputs.changelog }}
+
+  # 2) 이미지 빌드 → GHCR 푸시 (EC2에서 빌드 안 함 → t3.micro OOM 회피)
+  build-push:
+    needs: tag-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Lowercase owner
+        run: echo "OWNER_LC=${OWNER,,}" >> "$GITHUB_ENV"
+        env:
+          OWNER: ${{ github.repository_owner }}
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.BACKEND_DIR }}
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_REPOSITORY }}:${{ needs.tag-release.outputs.tag_name }}
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_REPOSITORY }}:latest
+
+  # 3) EC2 blue/green 무중단 배포 (SSM 원격 실행)
+  deploy:
+    needs: [tag-release, build-push]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Get running instance id
+        run: |
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=${{ env.EC2_INSTANCE_TAG_NAME }}" \
+                      "Name=instance-state-name,Values=running" \
+            --query "Reservations[].Instances[].InstanceId" --output text)
+          [[ -n "$INSTANCE_ID" && "$INSTANCE_ID" != "None" ]] || { echo "no running instance"; exit 1; }
+          echo "INSTANCE_ID=$INSTANCE_ID" >> "$GITHUB_ENV"
+
+      - name: SSM blue/green deploy
+        uses: peterkimzz/aws-ssm-send-command@master
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          instance-ids: ${{ env.INSTANCE_ID }}
+          working-directory: /
+          comment: villo backend blue/green deploy
+          command: |
+            set -Eeuo pipefail
+
+            # NPM 관리자 자격/도메인은 인스턴스에 보관 (SSM 커맨드 로그에 시크릿을 남기지 않음)
+            #   /etc/environment 에 아래 3개 필요: NPM_EMAIL, NPM_PASSWORD, APP_DOMAIN
+            source /etc/environment || true
+
+            OWNER_LC="${{ github.repository_owner }}"; OWNER_LC="${OWNER_LC,,}"
+            IMAGE="ghcr.io/${OWNER_LC}/${{ env.IMAGE_REPOSITORY }}:${{ needs.tag-release.outputs.tag_name }}"
+            SLOT1="${{ env.CONTAINER_1_NAME }}"; SLOT2="${{ env.CONTAINER_2_NAME }}"
+            PORT="${{ env.CONTAINER_PORT }}"; NET="${{ env.DOCKER_NETWORK }}"
+            ENV_FILE="${{ env.ENV_FILE }}"
+
+            echo "🔹 image: $IMAGE"
+            docker pull "$IMAGE"
+
+            # NPM API 토큰 발급
+            TOKEN=$(curl -s -X POST http://127.0.0.1:81/api/tokens \
+              -H "Content-Type: application/json" \
+              -d "{\"identity\":\"${NPM_EMAIL:-}\",\"secret\":\"${NPM_PASSWORD:-}\"}" | jq -r '.token')
+            [[ -n "$TOKEN" && "$TOKEN" != "null" ]] || { echo "❌ NPM token 발급 실패"; exit 1; }
+            [[ -n "${APP_DOMAIN:-}" ]] || { echo "❌ APP_DOMAIN 미설정"; exit 1; }
+
+            # 도메인으로 프록시 호스트 ID 조회
+            PROXY_ID=$(curl -s http://127.0.0.1:81/api/nginx/proxy-hosts \
+              -H "Authorization: Bearer $TOKEN" \
+              | jq ".[] | select(.domain_names[]==\"${APP_DOMAIN}\") | .id")
+            [[ -n "$PROXY_ID" && "$PROXY_ID" != "null" ]] || { echo "❌ 프록시 호스트 없음: ${APP_DOMAIN}"; exit 1; }
+
+            # 현재 업스트림(운영 중 컨테이너) 확인 → 역할 판정
+            CURRENT=$(curl -s http://127.0.0.1:81/api/nginx/proxy-hosts/$PROXY_ID \
+              -H "Authorization: Bearer $TOKEN" | jq -r '.forward_host')
+            echo "🔎 current upstream: ${CURRENT:-none}"
+
+            if   [[ "${CURRENT:-}" == "$SLOT1" ]]; then BLUE="$SLOT1"; GREEN="$SLOT2"
+            elif [[ "${CURRENT:-}" == "$SLOT2" ]]; then BLUE="$SLOT2"; GREEN="$SLOT1"
+            else BLUE="none"; GREEN="$SLOT1"; fi   # 최초 배포
+            echo "🎨 blue(now)=$BLUE  green(next)=$GREEN"
+
+            # green(신규) 컨테이너 기동 — DB/Redis/시크릿은 런타임 주입 (이미지엔 시크릿 없음)
+            docker rm -f "$GREEN" >/dev/null 2>&1 || true
+            docker run -d --name "$GREEN" \
+              --restart unless-stopped \
+              --network "$NET" \
+              --env-file "$ENV_FILE" \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e DB_HOST=${{ env.DB_HOST }} \
+              -e REDIS_HOST=${{ env.REDIS_HOST }} \
+              -e SERVER_FORWARD_HEADERS_STRATEGY=framework \
+              -e JAVA_TOOL_OPTIONS=-Xmx384m \
+              -e TZ=Asia/Seoul \
+              "$IMAGE"
+
+            # 헬스체크 — 새 컨테이너 안에서 직접 /actuator/health 확인
+            # graalvm 런타임은 Oracle Linux 9 기반이라 curl(curl-minimal) 기본 포함
+            echo "⏱ health check → $GREEN"
+            OK=""
+            sleep 8   # 초기 부팅 여유
+            for i in $(seq 1 40); do   # 최대 ~120s
+              CODE=$(docker exec "$GREEN" curl -s -o /dev/null -w '%{http_code}' \
+                "http://127.0.0.1:$PORT/actuator/health" 2>/dev/null || echo 000)
+              if [[ "$CODE" == "200" ]]; then OK=1; echo "✅ healthy"; break; fi
+              sleep 3
+            done
+            if [[ -z "$OK" ]]; then
+              echo "❌ health 실패 — 롤백(신규 제거, 기존 유지)"
+              docker logs --tail 200 "$GREEN" || true
+              docker rm -f "$GREEN" || true
+              exit 1
+            fi
+
+            # 업스트림 전환 (forward_host/forward_port 만 갱신, 나머지 설정 유지)
+            curl -s -X PUT http://127.0.0.1:81/api/nginx/proxy-hosts/$PROXY_ID \
+              -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+              -d "$(jq -n --arg h "$GREEN" --argjson p "$PORT" '{forward_host:$h, forward_port:$p}')" >/dev/null
+            echo "🔁 upstream → $GREEN:$PORT"
+
+            # 이전 blue 제거 (최초 배포면 생략)
+            if [[ "$BLUE" != "none" ]]; then
+              docker rm -f "$BLUE" >/dev/null 2>&1 || true
+              echo "🧹 removed old: $BLUE"
+            fi
+
+            # 오래된 이미지 정리 (현재 태그·latest 제외) — 결과 없음도 오류 아님
+            {
+              docker images --format '{{.Repository}}:{{.Tag}}' \
+                | grep -F "ghcr.io/${OWNER_LC}/${{ env.IMAGE_REPOSITORY }}:" \
+                | grep -v -F ":${{ needs.tag-release.outputs.tag_name }}" \
+                | grep -v -F ":latest" \
+                | xargs -r docker rmi
+            } || true
+
+            echo "🏁 완료 — 현재 서빙: $GREEN"

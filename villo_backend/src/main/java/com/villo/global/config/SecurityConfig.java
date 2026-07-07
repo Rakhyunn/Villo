@@ -46,6 +46,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
+                        // 무중단 배포 헬스체크 (blue/green 전환 판정용)
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         // 소셜 로그인 관련 허용
                         .requestMatchers(
                                 "/oauth2/**",
