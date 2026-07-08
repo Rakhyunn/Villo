@@ -48,6 +48,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 무중단 배포 헬스체크 (blue/green 전환 판정용)
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                        // API 문서 (Swagger UI / OpenAPI)
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**"
+                        ).permitAll()
                         // 소셜 로그인 관련 허용
                         .requestMatchers(
                                 "/oauth2/**",
