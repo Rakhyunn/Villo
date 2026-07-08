@@ -44,6 +44,8 @@ dependencies {
     implementation("software.amazon.awssdk:s3:2.25.6")
     // 무중단 배포 헬스체크용 (/actuator/health)
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    // API 문서화 (Swagger UI / OpenAPI)
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
 }
 
 tasks.withType<Test> {
