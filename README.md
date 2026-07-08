@@ -5,7 +5,6 @@
 **할 일을 퀘스트로 등록하고, 완료할수록 나만의 마을이 성장하는 투두 게이미피케이션 앱**
 
 [![Frontend](https://img.shields.io/badge/Web-villo.rockdev.kr-639922?style=flat-square)](https://villo.rockdev.kr)
-[![API](https://img.shields.io/badge/API-api.villo.rockdev.kr-ef9f27?style=flat-square)](https://api.villo.rockdev.kr)
 
 </div>
 
@@ -34,7 +33,7 @@
 
 - **개발 인원 / 역할**: 백엔드 · 인프라 · 프론트엔드 (개인 프로젝트)
 - **개발 기간**: 2026.06 ~ 2026.07
-- **배포 환경**: 프론트 [Vercel](https://villo.rockdev.kr) · 백엔드 [AWS EC2](https://api.villo.rockdev.kr) (무중단 CI/CD)
+- **배포 환경**: 프론트 Vercel · 백엔드 AWS EC2 (무중단 CI/CD)
 
 ---
 
