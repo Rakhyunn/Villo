@@ -5,6 +5,8 @@ import com.villo.domain.todo.service.TodoCompletionService;
 import com.villo.domain.todo.service.TodoService;
 import com.villo.global.response.ApiResponse;
 import com.villo.global.s3.S3Service;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Todo", description = "투두(퀘스트) — 조회·등록·수정·삭제, AI 분석, 완료·사진 인증")
 @RestController
 @RequestMapping("/api/v1/todos")
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ public class TodoController {
     private final TodoCompletionService todoCompletionService;
 
     // 오늘의 투두 목록 조회
+    @Operation(summary = "오늘의 퀘스트 목록 조회", description = "오늘 표시할 투두 목록 조회")
     @GetMapping
     public ApiResponse<List<TodoResponse>> getTodayTodos(
             @AuthenticationPrincipal Long userId
@@ -29,6 +33,7 @@ public class TodoController {
     }
 
     // AI 분석
+    @Operation(summary = "투두 AI 분석", description = "제목으로 카테고리·난이도·보상 골드를 분석 (저장 안 함)")
     @PostMapping("/analyze")
     public ApiResponse<TodoAiResultResponse> analyzeTodo(
             @AuthenticationPrincipal Long userId,
@@ -38,6 +43,7 @@ public class TodoController {
     }
 
     // 투두 등록
+    @Operation(summary = "투두 등록", description = "퀘스트 등록 (반복 설정 포함 가능)")
     @PostMapping
     public ApiResponse<TodoResponse> createTodo(
             @AuthenticationPrincipal Long userId,
@@ -47,6 +53,7 @@ public class TodoController {
     }
 
     // 투두 수정
+    @Operation(summary = "투두 수정", description = "제목 변경 시 서버가 AI 재분석 후 저장")
     @PutMapping("/{todoId}")
     public ApiResponse<TodoResponse> updateTodo(
             @AuthenticationPrincipal Long userId,
@@ -57,6 +64,7 @@ public class TodoController {
     }
 
     // 투두 삭제
+    @Operation(summary = "투두 삭제", description = "소프트 딜리트 (CANCELLED 처리)")
     @DeleteMapping("/{todoId}")
     public ApiResponse<Void> deleteTodo(
             @AuthenticationPrincipal Long userId,
@@ -67,6 +75,7 @@ public class TodoController {
     }
 
     // 투두 완료 처리
+    @Operation(summary = "투두 일반 완료", description = "사진 없이 완료 처리 후 골드 지급")
     @PostMapping("/{todoId}/complete")
     public ApiResponse<TodoCompletionResponse> completeTodo(
             @AuthenticationPrincipal Long userId,
@@ -76,6 +85,7 @@ public class TodoController {
     }
 
     // 사진 업로드용 Presigned URL 발급
+    @Operation(summary = "사진 업로드 Presigned URL 발급", description = "R2에 직접 업로드할 URL 발급")
     @PostMapping("/images/presigned-url")
     public ApiResponse<PresignedUrlResponse> getPresignedUrl(
             @AuthenticationPrincipal Long userId,
@@ -87,6 +97,7 @@ public class TodoController {
     }
 
     // 사진 인증 완료 처리
+    @Operation(summary = "투두 사진 인증 완료", description = "인증 사진 등록 후 완료 처리 (골드 +30% 보너스)")
     @PostMapping("/{todoId}/certify")
     public ApiResponse<TodoCertifyResponse> certifyTodo(
             @AuthenticationPrincipal Long userId,
