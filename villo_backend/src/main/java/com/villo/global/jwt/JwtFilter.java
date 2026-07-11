@@ -39,8 +39,8 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Rq로 쿠키에서 토큰 추출
-        String accessToken = rq.getCookieValue("accessToken", null);
+        // 토큰 추출
+        String accessToken = resolveToken(request);
 
         // accessToken이 없거나 빈 값이면 인증 없이 통과
         if (accessToken == null || accessToken.isBlank()) {
@@ -68,5 +68,14 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    // 헤더 우선(모바일), 없으면 쿠키(웹)
+    private String resolveToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        return rq.getCookieValue("accessToken", null);
     }
 }
