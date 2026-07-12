@@ -13,9 +13,10 @@ export const analyzeTodo = (title) =>
 export const createTodo = (payload) =>
   api.post('/api/v1/todos', payload).then((r) => r.data.data)
 
-// 투두 제목 수정 (제목 변경 시 서버가 AI 재분석) → TodoResponse
-export const updateTodoTitle = (todoId, title) =>
-  api.put(`/api/v1/todos/${todoId}`, { title }).then((r) => r.data.data)
+// 투두 수정 — 미리보기 분석 결과를 함께 보내 서버 재분석 없이 그대로 저장 → TodoResponse
+// payload: { title, category, difficulty, gold }
+export const updateTodo = (todoId, payload) =>
+  api.put(`/api/v1/todos/${todoId}`, payload).then((r) => r.data.data)
 
 // 반복 설정 등록 → RepeatConfigResponse
 export const createRepeat = (todoId, config) =>

@@ -8,7 +8,7 @@ import TodoTag, {
 import {
   getTodayTodos,
   analyzeTodo,
-  updateTodoTitle,
+  updateTodo,
   deleteTodo,
 } from '../../api/todo'
 
@@ -95,13 +95,18 @@ export default function TodoEditPage() {
     }
   }
 
-  // 수정 완료 (PUT — 서버가 제목 변경분 재분석해 저장)
+  // 수정 완료 (미리보기 분석 결과를 그대로 저장 — 서버 재분석 안 함)
   const handleSave = async () => {
-    if (saving) return
+    if (!ai || saving) return
     setSaving(true)
     setErrorMsg('')
     try {
-      await updateTodoTitle(todoId, title.trim())
+      await updateTodo(todoId, {
+        title: title.trim(),
+        category: ai.category,
+        difficulty: ai.difficulty,
+        gold: ai.gold,
+      })
       navigate('/')
     } catch (err) {
       setErrorMsg(err.response?.data?.msg ?? '수정에 실패했어요')
