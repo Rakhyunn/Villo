@@ -75,12 +75,16 @@ public class TodoService {
         return TodoResponse.from(savedTodo);
     }
 
-    // 투두 수정 + AI 재분석
+    // 투두 수정
     @Transactional
     public TodoResponse updateTodo(Long userId, Long todoId, TodoUpdateRequest request) {
         Todo todo = getTodoByIdAndUserId(todoId, userId);
-        // 제목 변경 시 AI 재분석
-        if (!todo.getTitle().equals(request.title())) {
+
+        if (request.category() != null && request.difficulty() != null && request.gold() != null) {
+            // 미리보기 분석 결과 제공 → 재분석 없이 그대로 저장
+            todo.updateAiResult(request.category(), request.difficulty(), request.gold());
+        } else if (!todo.getTitle().equals(request.title())) {
+            // 분석 결과 미제공 + 제목 변경 → 서버 재분석
             TodoAiResultResponse aiResult = todoAiService.analyze(request.title());
             todo.updateAiResult(aiResult.category(), aiResult.difficulty(), aiResult.gold());
         }
